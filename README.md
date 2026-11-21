@@ -17,3 +17,15 @@ In the repository, open **Settings → Pages**. Under **Build and deployment**, 
 ## Data and risk
 
 This first version uses clearly labelled sample data. Connect only data sources you are permitted to use; confirm licensing and redistribution rights before publishing live prices. Technical signals are educational tools, not guaranteed outcomes.
+
+
+## Automatic daily PSX signals
+
+An independent PSX 20/80 V4 signal engine and weekday GitHub Actions workflow are included.
+
+- Workflow: `.github/workflows/daily-signals.yml` (16:45 Pakistan time, Monday–Friday)
+- Engine: `scripts/generate_signals.py`
+- Published dashboard feed: `data/signals.json`
+- Setup guide: `docs/DAILY_SIGNALS_SETUP.md`
+
+**Activation required:** configure a licensed/authorized OHLCV CSV provider using the GitHub Actions secrets documented in the setup guide. Until then, the dashboard deliberately shows DATA PENDING and produces no stock calls. Do not set the license confirmation secret to true unless the provider permits automated use and public display.
