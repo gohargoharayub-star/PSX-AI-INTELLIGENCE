@@ -52,11 +52,11 @@ async function loadDailySignals(){
   const data=await res.json();
   if(!Array.isArray(data.signals)||!data.signals.length) throw new Error('Waiting for first successful daily scan');
   if(status){status.textContent='● DAILY DATA · '+(data.session_date||'');status.classList.remove('demo');}
-  const rows=data.signals.slice(0,30);
+  const actionable=data.signals.filter(x=>x.signal==='STRONG BUY'||x.signal==='BUY'||x.signal==='SELL');\n  const rows=(actionable.length?actionable:data.signals.filter(x=>x.signal==='WAIT').slice(0,30));
   const target=document.getElementById('dashRows');
   if(target) target.innerHTML=rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+' PKR</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+x.score+'/100</td></tr>').join('');
   const board=document.getElementById('liveSignalBoard');
-  if(board) board.innerHTML=rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+'</td><td>'+x.rsi14+'</td><td>'+x.relative_volume+'</td><td>'+x.score+'</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+(x.entry??'—')+'</td><td>'+(x.stop_loss??'—')+'</td><td>'+(x.tp1??'—')+'</td><td>'+(x.tp2??'—')+'</td><td>'+(x.tp3??'—')+'</td></tr>').join('');
+  if(board) board.innerHTML=rows.length?rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+'</td><td>'+x.rsi14+'</td><td>'+x.relative_volume+'</td><td>'+x.score+'</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+(x.entry??'—')+'</td><td>'+(x.stop_loss??'—')+'</td><td>'+(x.tp1??'—')+'</td><td>'+(x.tp2??'—')+'</td><td>'+(x.tp3??'—')+'</td></tr>').join('');
   const meta=document.getElementById('dailyMeta');if(meta)meta.textContent='Session '+data.session_date+' · '+data.symbols_with_valid_history+' shares calculated · generated '+data.generated_at_utc;
  }catch(e){if(status)status.textContent='● DATA PENDING';const meta=document.getElementById('dailyMeta');if(meta)meta.textContent=e.message+' · Previous saved file, if any, remains available.';}
 }
