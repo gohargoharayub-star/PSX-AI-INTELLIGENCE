@@ -51,7 +51,12 @@ def scan(sym,g):
  elif score>=60:s="WAIT"
  else:s="NO TRADE"
  entry=float(a.close); risk=1.5*float(a.atr)
- return {"symbol":sym,"date":str(pd.to_datetime(a.date).date()),"close":num(entry),"rsi14":num(a.rsi),"relative_volume":num(a.rv),"adx14":num(a.adx),"score":int(round(score)),"signal":s,"entry":num(entry),"stop_loss":num(entry-risk),"tp1":num(entry+2*risk),"tp2":num(entry+3*risk),"tp3":num(entry+4*risk),"weekly_confirmed":wk,"breakout_20d":br,"trend_confirmed":trend,"momentum_confirmed":mom,"volume_cross":vc,"filters_passed":filt}
+ short=(s=="SELL")
+ stop=entry+risk if short else entry-risk
+ t1=entry-2*risk if short else entry+2*risk
+ t2=entry-3*risk if short else entry+3*risk
+ t3=entry-4*risk if short else entry+4*risk
+ return {"symbol":sym,"date":str(pd.to_datetime(a.date).date()),"close":num(entry),"rsi14":num(a.rsi),"relative_volume":num(a.rv),"adx14":num(a.adx),"score":int(round(score)),"signal":s,"entry":num(entry),"stop_loss":num(stop),"tp1":num(t1),"tp2":num(t2),"tp3":num(t3),"weekly_confirmed":wk,"breakout_20d":br,"trend_confirmed":trend,"momentum_confirmed":mom,"volume_cross":vc,"filters_passed":filt}
 def main():
  if not INPUT.exists(): payload={"status":"data_not_configured","message":"Authorized OHLCV CSV source not configured.","session_date":None,"generated_at_utc":datetime.now(timezone.utc).isoformat(),"symbols_with_valid_history":0,"signals":[]}
  else:
