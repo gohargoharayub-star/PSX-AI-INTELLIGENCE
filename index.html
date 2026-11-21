@@ -52,7 +52,8 @@ async function loadDailySignals(){
   const data=await res.json();
   if(!Array.isArray(data.signals)||!data.signals.length) throw new Error('Waiting for first successful daily scan');
   if(status){status.textContent='● DAILY DATA · '+(data.session_date||'');status.classList.remove('demo');}
-  const actionable=data.signals.filter(x=>x.signal==='STRONG BUY'||x.signal==='BUY'||x.signal==='SELL');\n  const rows=(actionable.length?actionable:data.signals.filter(x=>x.signal==='WAIT').slice(0,30));
+  const actionable=data.signals.filter(x=>x.signal==='STRONG BUY'||x.signal==='BUY'||x.signal==='SELL');
+  const rows=(actionable.length?actionable:data.signals.filter(x=>x.signal==='WAIT').slice(0,30));
   const target=document.getElementById('dashRows');
   if(target) target.innerHTML=rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+' PKR</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+x.score+'/100</td></tr>').join('');
   const board=document.getElementById('liveSignalBoard');
