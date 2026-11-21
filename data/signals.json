@@ -1,0 +1,7 @@
+{
+  "mode": "waiting_for_first_scheduled_run",
+  "session_date": null,
+  "signals": [],
+  "attribution": "Data by PSX Lens (psxlens.com)",
+  "note": "The first automated signal run will populate this file after GitHub Actions is enabled."
+}
