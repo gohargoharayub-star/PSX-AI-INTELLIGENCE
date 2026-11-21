@@ -3,7 +3,7 @@
 Never emits a signal for a symbol without sufficient, current, validated history.
 """
 import json, os, sys, time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
@@ -122,7 +122,7 @@ def analyse(symbol,bars):
       "score":score,"signal":status,"entry":round(c,2),"stop_loss":stop,
       "tp1":round(c+risk,2) if risk else None,"tp2":round(c+2*risk,2) if risk else None,"tp3":round(c+3*risk,2) if risk else None,
       "rsi14":round(r,1) if r is not None else None,"adx14":round(a,1) if a is not None else None,
-      "relative_volume":round(rel,2),"ema20":round(e20,2),"ema50":round(e50,2),"ema100":round(e100,2),"ema200":round(e200,2),
+      "relative_volume":round(rel,2),"extension_pct":round(extension,2),"quality_gate_passed":bool(quality_ok),"ema20":round(e20,2),"ema50":round(e50,2),"ema100":round(e100,2),"ema200":round(e200,2),
       "macd_bullish":bool(m is not None and ms is not None and m>ms),"weekly_bullish":bool(weekly_pts),
       "breakout":bool(breakout),"volume_cross":bool(volume),"atr14":round(av,2) if av else None,
       "score_components":{"trend":trend,"momentum":momentum,"volume":volume,"price_action":price,"weekly":weekly_pts}}
@@ -149,7 +149,7 @@ def main():
     output={"generated_at_utc":datetime.now(timezone.utc).isoformat(),"session_date":latest,
       "data_source":"PSX Lens API (delayed end-of-day data)","attribution":"Data by PSX Lens (psxlens.com)",
       "mode":"automated_daily_eod","universe_scanned":len(syms),"symbols_with_valid_history":len(results),
-      "signals":results,"method":"PSX AI INTELLIGENCE 20/80 adaptation; daily OHLCV; weekly close approximation from 5-session closes.",
+      "signals":results,"method":"PSX AI INTELLIGENCE 20/80 adaptation; daily OHLCV; completed ISO-week closes; ADX >=20 and extension <=6% quality gates.",
       "disclaimer":"Research only, not investment advice. Signals are rule-based and may be wrong. Verify prices, corporate actions, liquidity and announcements before trading."}
     with open("data/signals.json","w",encoding="utf-8") as f: json.dump(output,f,ensure_ascii=False,indent=2)
     print(f"Published {len(results)} calculated symbols for {latest} from universe {len(syms)}")
