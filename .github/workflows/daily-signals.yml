@@ -1,31 +1,43 @@
-name: Daily PSX signal update
+name: Daily PSX Signals
 on:
   schedule:
-    - cron: "45 10 * * 1-5"
+    - cron: "45 11 * * 1-5"
   workflow_dispatch:
 permissions:
   contents: write
-concurrency:
-  group: daily-psx-signals
-  cancel-in-progress: false
 jobs:
-  update-signals:
+  scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Generate end-of-day signals
-        run: python scripts/generate_signals.py
-      - name: Commit daily signal board
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Download licensed OHLCV
+        env:
+          DATA_URL: ${{ secrets.PSX_DATA_CSV_URL }}
+          DATA_TOKEN: ${{ secrets.PSX_DATA_TOKEN }}
+          LICENSE_OK: ${{ secrets.PSX_DATA_LICENSE_CONFIRMED }}
+        run: |
+          python - <<'PY'
+          import os,urllib.request
+          from pathlib import Path
+          url=os.getenv("DATA_URL","").strip()
+          if not url or os.getenv("LICENSE_OK","").lower()!="true":
+              print("Authorized data feed not configured; publish pending state.")
+          else:
+              req=urllib.request.Request(url)
+              token=os.getenv("DATA_TOKEN","").strip()
+              if token:req.add_header("Authorization","Bearer "+token)
+              with urllib.request.urlopen(req,timeout=90) as r: data=r.read()
+              Path("data").mkdir(exist_ok=True);Path("data/ohlcv.csv").write_bytes(data)
+          PY
+      - run: python scripts/generate_signals.py
+      - name: Publish JSON snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/signals.json
-          if git diff --cached --quiet; then
-            echo "No signal file changes."
-          else
-            git commit -m "Update daily PSX signals"
-            git push
-          fi
+          git diff --cached --quiet || git commit -m "Update daily PSX signals"
+          git push
