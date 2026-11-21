@@ -43,4 +43,23 @@ document.getElementById('scanBtn').onclick=()=>{const s=document.getElementById(
 document.getElementById('analysisBtn').onclick=()=>{const s=document.getElementById('analysisSymbol').value.trim().toUpperCase();document.getElementById('analysisResult').textContent=s?'Research workspace opened for '+s+'. Connect verified market prices and company filings to calculate indicators and valuation.':'Please enter a PSX symbol.'};
 document.getElementById('fundBtn').onclick=()=>{const s=document.getElementById('fundSymbol').value.trim().toUpperCase();document.getElementById('fundResult').textContent=s?'Company workspace opened for '+s+'. No EPS, book value, ratios or fair value will be estimated without sourced financial statements.':'Please enter a PSX symbol.'};
 let watch=JSON.parse(localStorage.getItem('psxai-watchlist')||'[]');function renderWatch(){document.getElementById('watchItems').innerHTML=watch.length?watch.map((s,i)=>'<div class="split" style="padding:10px;border-bottom:1px solid var(--line)"><b>'+s+'</b><button class="btn" data-remove="'+i+'">Remove</button></div>').join(''):'<div class="empty">Your watchlist is empty.</div>';document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{watch.splice(+b.dataset.remove,1);saveWatch()})}function saveWatch(){localStorage.setItem('psxai-watchlist',JSON.stringify(watch));renderWatch()}document.getElementById('addWatch').onclick=()=>{const el=document.getElementById('watchInput'),s=el.value.trim().toUpperCase();if(s&&/^[A-Z0-9.-]{2,15}$/.test(s)&&!watch.includes(s)){watch.push(s);saveWatch();el.value=''}};renderWatch();
+
+async function loadDailySignals(){
+ const status=document.querySelector('.demo');
+ try{
+  const res=await fetch('./data/signals.json?ts='+Date.now(),{cache:'no-store'});
+  if(!res.ok) throw new Error('Daily signal file not published yet');
+  const data=await res.json();
+  if(!Array.isArray(data.signals)||!data.signals.length) throw new Error('Waiting for first successful daily scan');
+  if(status){status.textContent='● DAILY DATA · '+(data.session_date||'');status.classList.remove('demo');}
+  const rows=data.signals.slice(0,30);
+  const target=document.getElementById('dashRows');
+  if(target) target.innerHTML=rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+' PKR</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+x.score+'/100</td></tr>').join('');
+  const board=document.getElementById('liveSignalBoard');
+  if(board) board.innerHTML=rows.map(x=>'<tr><td class="ticker">'+x.symbol+'</td><td>'+x.close.toFixed(2)+'</td><td>'+x.rsi14+'</td><td>'+x.relative_volume+'</td><td>'+x.score+'</td><td><span class="tag '+(x.signal.includes('BUY')?'':x.signal==='SELL'?'sell':'wait')+'">'+x.signal+'</span></td><td>'+(x.entry??'—')+'</td><td>'+(x.stop_loss??'—')+'</td><td>'+(x.tp1??'—')+'</td><td>'+(x.tp2??'—')+'</td><td>'+(x.tp3??'—')+'</td></tr>').join('');
+  const meta=document.getElementById('dailyMeta');if(meta)meta.textContent='Session '+data.session_date+' · '+data.symbols_with_valid_history+' shares calculated · generated '+data.generated_at_utc;
+ }catch(e){if(status)status.textContent='● DATA PENDING';const meta=document.getElementById('dailyMeta');if(meta)meta.textContent=e.message+' · Previous saved file, if any, remains available.';}
+}
+loadDailySignals();
+
 </script></body></html>
