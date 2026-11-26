@@ -2,7 +2,7 @@
   "status": "data_not_configured",
   "message": "Authorized OHLCV CSV source not configured.",
   "session_date": null,
-  "generated_at_utc": "2026-11-25T12:50:47.927363+00:00",
+  "generated_at_utc": "2026-11-26T12:49:22.463122+00:00",
   "symbols_with_valid_history": 0,
   "signals": []
 }
